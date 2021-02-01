@@ -58,6 +58,8 @@ public:
 
     void writeOptions();
 
+    void ready();
+
     void writePage(uint32_t page);
     void readPage(uint32_t page, uint8_t* data);
 
