@@ -1239,3 +1239,4 @@ CommandOptions::invoke(char* argv[], int argc)
 {
     _flash->writeOptions();
 }
+
