@@ -1,9 +1,14 @@
-name: Build Environment
+name: Legacy Makefile Build Environment
 
 on: [push, pull_request]
 
 env:
   PIPENV_ACTIVE: 1
+  deb_packages: >-
+    libreadline-dev
+    libwxgtk3.0-gtk3-dev
+    wx-common
+    wx3.0-headers
 
 jobs:
   linux:
@@ -11,17 +16,19 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+    - name: Fetch tags
+      run: git fetch --prune --unshallow --tags
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install libwxgtk3.0-dev libreadline-dev -y
+        sudo apt-get install -y ${{ env.deb_packages }}
     - name: Build
       run: |
         make -j
         make install
         bin/bossac --help
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: linux
@@ -32,7 +39,9 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+    - name: Fetch tags
+      run: git fetch --prune --unshallow --tags
     - name: Install dependencies
       run: |
         brew update
@@ -42,29 +51,49 @@ jobs:
         make -j
         make install
         bin/bossac --help
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: macos
         path: bin
 
+  # TODO: Not working currently!
   windows:
     runs-on: windows-latest
     strategy:
       fail-fast: false
+      matrix:
+        include:
+          - { sys: mingw32, env: i686 }
     steps:
-    - uses: actions/checkout@v2
-    - uses: numworks/setup-msys2@v1
+    - uses: actions/checkout@v4
+    - name: Fetch tags
+      run: git fetch --prune --unshallow --tags
+    - uses: msys2/setup-msys2@v2
       with:
-        msystem: MSYS32
-    - run: msys2do pacman --noconfirm -S -noconfirm --noprogressbar
-    - run: msys2do pacman --noconfirm -U mingw-w64-*-any.pkg.tar.xz
-    - run: |
+        msystem: ${{matrix.sys}}
+        install: >-
+          base-devel
+          git
+        pacboy: >-
+          make
+          binutils
+          gcc
+          wxwidgets3.2-common
+          wxwidgets3.2-common-libs
+          wxwidgets3.2-gtk3
+          wxwidgets3.2-gtk3-libs
+          wxwidgets3.2-msw
+          wxwidgets3.2-msw-cb_headers
+          wxwidgets3.2-msw-libs
+    - name: Build
+      shell: msys2 {0}
+      run: |
         set MSYSTEM=MINGW32
-        msys2do make -j
-        msys2do make install
+        mingw32-make -j
+        mingw32-make install
         bin/bossac --help
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: windows

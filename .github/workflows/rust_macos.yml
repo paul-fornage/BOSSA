@@ -1,0 +1,17 @@
+name: Rust macOS
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+      - name: Cargo Install
+        run: cargo install --path bossac --bins --root dist
+      - uses: actions/upload-artifact@v3
+        with:
+          name: macos_release_binaries
+          path: dist/bin

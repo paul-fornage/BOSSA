@@ -101,5 +101,7 @@ private:
     void readChipId(uint32_t& chipId, uint32_t& extChipId);
 };
 
+std::unique_ptr<Device> new_device(Samba& samba);
+
 #endif // _DEVICE_H
 

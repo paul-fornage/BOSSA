@@ -1,0 +1,19 @@
+[package]
+name = "bossa"
+version = "2.0.0"
+authors = ["Jacob Alexander <haata@kiibohd.com>, Scott Shumate <scott@shumatech.com>"]
+description = "Rust cxx wrapper around BOSSA SAM-BA library"
+edition = "2021"
+license = "BSD-3-Clause"
+repository = "https://github.com/kiibohd/BOSSA"
+
+[workspace]
+members = [
+	"bossac"
+]
+
+[dependencies]
+cxx = "1.0"
+
+[build-dependencies]
+cxx-build = "1.0"

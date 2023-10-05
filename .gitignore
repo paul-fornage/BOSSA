@@ -2,14 +2,15 @@
 obj
 *.exe
 *~
-bossa
-bossac
 bin
 *.swp
 tags
 *.bak
 install/*.crt
 install/*.p12
+
+Cargo.lock
+target/
 
 # Extras for building with MSVC
 x64/

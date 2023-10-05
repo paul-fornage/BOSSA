@@ -66,7 +66,7 @@ public:
 
     void go(uint32_t addr);
 
-    std::string version();
+    const std::string &version();
 
     void chipId(uint32_t& chipId, uint32_t& extChipId);
 
@@ -83,7 +83,7 @@ public:
     bool canWriteBuffer() { return _canWriteBuffer; }
     void writeBuffer(uint32_t src_addr, uint32_t dst_addr, uint32_t size);
     uint32_t writeBufferSize() { return 4096; }
-    
+
     bool canChecksumBuffer() { return _canChecksumBuffer; }
     uint16_t checksumBuffer(uint32_t start_addr, uint32_t size);
     uint32_t checksumBufferSize() { return 4096; }
@@ -97,6 +97,7 @@ private:
     bool _debug;
     bool _isUsb;
     SerialPort::Ptr _port;
+    std::string _version;
 
     bool init();
 
@@ -110,6 +111,8 @@ private:
     void readBinary(uint8_t* buffer, int size);
 
 };
+
+std::unique_ptr<Samba> new_samba();
 
 
 #endif // _SAMBA_H

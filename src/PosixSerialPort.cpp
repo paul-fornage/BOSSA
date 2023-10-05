@@ -3,7 +3,7 @@
 //
 // Copyright (c) 2011-2018, ShumaTech
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
 //     * Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
 //     * Neither the name of the <organization> nor the
 //       names of its contributors may be used to endorse or promote products
 //       derived from this software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 // WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -62,8 +62,8 @@ PosixSerialPort::~PosixSerialPort()
 bool
 PosixSerialPort::open(int baud,
                       int data,
-                      SerialPort::Parity parity,
-                      SerialPort::StopBit stop)
+                      Parity parity,
+                      StopBit stop)
 {
     struct termios options;
     speed_t speed;
@@ -144,17 +144,17 @@ PosixSerialPort::open(int baud,
 
     switch (parity)
     {
-        case SerialPort::ParityNone:
+        case ParityNone:
             options.c_cflag &= ~PARENB;
             options.c_cflag &= ~PARODD;
             options.c_iflag &= ~(INPCK | ISTRIP);
             break;
-        case SerialPort::ParityOdd:
+        case ParityOdd:
             options.c_cflag |= PARENB;
             options.c_cflag |= PARODD;
             options.c_iflag |= (INPCK | ISTRIP);
             break;
-        case SerialPort::ParityEven:
+        case ParityEven:
             options.c_cflag |= PARENB;
             options.c_cflag &= ~PARODD;
             options.c_iflag |= (INPCK | ISTRIP);

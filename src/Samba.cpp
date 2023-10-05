@@ -550,8 +550,8 @@ Samba::go(uint32_t addr)
         _port->flush();
 }
 
-std::string
-Samba::version()
+const std::string
+&Samba::version()
 {
     uint8_t cmd[256];
     char* str;
@@ -576,12 +576,12 @@ Samba::version()
     }
     str[pos] = '\0';
 
-    std::string ver(str);
+    _version = str;
 
     if (_debug)
-        printf("%s()=%s\n", __FUNCTION__, ver.c_str());
+        printf("%s()=%s\n", __FUNCTION__, _version.c_str());
 
-    return ver;
+    return _version;
 }
 
 void
@@ -613,7 +613,7 @@ Samba::writeBuffer(uint32_t src_addr, uint32_t dst_addr, uint32_t size)
 
     if (size > checksumBufferSize())
         throw SambaError();
-            
+
     if (_debug)
         printf("%s(scr_addr=%#x, dst_addr=%#x, size=%#x)\n", __FUNCTION__, src_addr, dst_addr, size);
 
@@ -647,7 +647,7 @@ Samba::checksumBuffer(uint32_t start_addr, uint32_t size)
 
     if (size > checksumBufferSize())
         throw SambaError();
-        
+
     if (_debug)
         printf("%s(start_addr=%#x, size=%#x) = ", __FUNCTION__, start_addr, size);
 
@@ -670,5 +670,9 @@ Samba::checksumBuffer(uint32_t start_addr, uint32_t size)
     if (_debug)
         printf("%x\n", res);
     return res;
+}
+
+std::unique_ptr<Samba> new_samba() {
+    return std::make_unique<Samba>();
 }
 

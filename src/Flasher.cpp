@@ -99,7 +99,7 @@ Flasher::write(const char* filename, uint32_t foffset)
 
     if (foffset % pageSize != 0 || foffset >= _flash->totalSize())
         throw FlashOffsetError();
-    
+
     infile = fopen(filename, "rb");
     if (!infile)
         throw FileOpenError(errno);
@@ -108,7 +108,7 @@ Flasher::write(const char* filename, uint32_t foffset)
     {
         if (fseek(infile, 0, SEEK_END) != 0 || (fsize = ftell(infile)) < 0)
             throw FileIoError(errno);
-        
+
         rewind(infile);
 
         numPages = (fsize + pageSize - 1) / pageSize;
@@ -122,20 +122,20 @@ Flasher::write(const char* filename, uint32_t foffset)
             uint32_t offset = 0;
             uint32_t bufferSize = _samba.writeBufferSize();
             std::vector<uint8_t> buffer(bufferSize);
-            
+
             while ((fbytes = fread(buffer.data(), 1, bufferSize, infile)) > 0)
             {
                 _observer.onProgress(offset / pageSize, numPages);
-                
+
                 if (fbytes < bufferSize)
                 {
                     memset(buffer.data() + fbytes, 0, bufferSize - fbytes);
                     fbytes = (fbytes + pageSize - 1) / pageSize * pageSize;
                 }
-                
+
                 _flash->loadBuffer(buffer.data(), (uint16_t)fbytes);
                 _flash->writeBuffer(foffset + offset, (uint32_t)fbytes);
-                offset += (uint32_t)fbytes;                
+                offset += (uint32_t)fbytes;
             }
 
         }
@@ -163,7 +163,7 @@ Flasher::write(const char* filename, uint32_t foffset)
         fclose(infile);
         throw;
     }
-    
+
     fclose(infile);
     _observer.onProgress(numPages, numPages);
 }
@@ -188,9 +188,9 @@ Flasher::verify(const char* filename, uint32_t& pageErrors, uint32_t& totalError
 
     if (foffset % pageSize != 0 || foffset >= _flash->totalSize())
         throw FlashOffsetError();
-    
+
     pageOffset = foffset / pageSize;
-    
+
     infile = fopen(filename, "rb");
     if (!infile)
         throw FileOpenError(errno);
@@ -199,7 +199,7 @@ Flasher::verify(const char* filename, uint32_t& pageErrors, uint32_t& totalError
     {
         if (fseek(infile, 0, SEEK_END) != 0 || (fsize = ftell(infile)) < 0)
             throw FileIoError(errno);
-        
+
         rewind(infile);
 
         numPages = (fsize + pageSize - 1) / pageSize;
@@ -211,7 +211,7 @@ Flasher::verify(const char* filename, uint32_t& pageErrors, uint32_t& totalError
         while ((fbytes = fread(bufferA.data(), 1, pageSize, infile)) > 0)
         {
             byteErrors = 0;
-            
+
             _observer.onProgress(pageNum, numPages);
 
             if (_samba.canChecksumBuffer())
@@ -219,9 +219,9 @@ Flasher::verify(const char* filename, uint32_t& pageErrors, uint32_t& totalError
                 uint16_t calcCrc = 0;
                 for (uint32_t i = 0; i < fbytes; i++)
                     calcCrc = _samba.checksumCalc(bufferA[i], calcCrc);
-                
+
                 flashCrc = _samba.checksumBuffer((pageOffset + pageNum) * pageSize, (uint32_t)fbytes);
-                
+
                 if (flashCrc != calcCrc)
                 {
                     _flash->readPage(pageOffset + pageNum, bufferB.data());
@@ -243,7 +243,7 @@ Flasher::verify(const char* filename, uint32_t& pageErrors, uint32_t& totalError
                         byteErrors++;
                 }
             }
-            
+
             if (byteErrors != 0)
             {
                 pageErrors++;
@@ -260,11 +260,11 @@ Flasher::verify(const char* filename, uint32_t& pageErrors, uint32_t& totalError
         fclose(infile);
         throw;
     }
-    
+
     fclose(infile);
 
      _observer.onProgress(numPages, numPages);
-    
+
     if (pageErrors != 0)
         return false;
 
@@ -284,7 +284,7 @@ Flasher::read(const char* filename, uint32_t fsize, uint32_t foffset)
 
     if (foffset % pageSize != 0 || foffset >= _flash->totalSize())
         throw FlashOffsetError();
-        
+
     pageOffset = foffset / pageSize;
 
     if (fsize == 0)
@@ -293,13 +293,13 @@ Flasher::read(const char* filename, uint32_t fsize, uint32_t foffset)
     numPages = (fsize + pageSize - 1) / pageSize;
     if (pageOffset + numPages > _flash->numPages())
         throw FileSizeError();
-    
+
     outfile = fopen(filename, "wb");
     if (!outfile)
         throw FileOpenError(errno);
-    
+
     _observer.onStatus("Read %d bytes from flash\n", fsize);
-    
+
     try
     {
         for (pageNum = 0; pageNum < numPages; pageNum++)
@@ -320,14 +320,14 @@ Flasher::read(const char* filename, uint32_t fsize, uint32_t foffset)
         fclose(outfile);
         throw;
     }
-    
+
     _observer.onProgress(numPages, numPages);
-    
+
     fclose(outfile);
 }
 
 void
-Flasher::lock(string& regionArg, bool enable)
+Flasher::lock(const string& regionArg, bool enable)
 {
     if (regionArg.empty())
     {
@@ -380,4 +380,51 @@ Flasher::info(FlasherInfo& info)
     info.canWriteBuffer = _samba.canWriteBuffer();
     info.canChecksumBuffer = _samba.canChecksumBuffer();
     info.lockRegions = _flash->getLockRegions();
+}
+
+void
+Flasher::setSecurity()
+{
+    _flash->setSecurity();
+}
+
+void
+Flasher::setBod(bool enable)
+{
+    _flash->setBod(enable);
+}
+
+void
+Flasher::setBor(bool enable)
+{
+    _flash->setBor(enable);
+}
+
+void
+Flasher::setBootFlash(bool enable)
+{
+    _flash->setBootFlash(enable);
+}
+
+void
+Flasher::writeOptions()
+{
+    _flash->writeOptions();
+}
+
+void
+Flasher::reset()
+{
+    _flash->ready();
+    _device.reset();
+}
+
+std::unique_ptr<FlasherInfo> new_flasher_info()
+{
+    return std::unique_ptr<FlasherInfo>(new FlasherInfo());
+}
+
+std::unique_ptr<Flasher> new_flasher(Samba& samba, Device& device, FlasherObserver& observer)
+{
+    return std::unique_ptr<Flasher>(new Flasher(samba, device, observer));
 }

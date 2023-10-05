@@ -35,11 +35,12 @@ OS:=$(shell uname -s | cut -c -7)
 #
 ifeq ($(OS),MINGW32)
 # Use wxWindows development branch to work around font scaling issues on Windows
-WXVERSION=3.1
+WXVERSION=3.2
 EXE=.exe
 COMMON_SRCS+=WinSerialPort.cpp WinPortFactory.cpp
 COMMON_LDFLAGS=-Wl,--enable-auto-import -static -static-libstdc++ -static-libgcc
-COMMON_LIBS=-ltermcap -Wl,--as-needed -lsetupapi
+COMMON_LIBS=-ltermcap -Wl,--as-needed -lsetupapi -lole32
+COMMON_CXXFLAGS=-std=c++14
 BOSSA_RC=BossaRes.rc
 WIXDIR="C:\Program Files (x86)\WiX Toolset v3.11\bin"
 CODE_SIGN=$(INSTALLDIR)\\code_sign.p12
@@ -85,7 +86,7 @@ endif
 ifeq ($(OS),Linux)
 COMMON_SRCS+=PosixSerialPort.cpp LinuxPortFactory.cpp
 COMMON_LIBS=-Wl,--as-needed
-COMMON_CXXFLAGS=-std=c++11
+COMMON_CXXFLAGS=-std=c++14
 WX_LIBS+=-lX11
 
 MACHINE:=$(shell uname -m)
@@ -98,9 +99,10 @@ endif
 # OS X rules
 #
 ifeq ($(OS),Darwin)
+WXVERSION=3.2
 COMMON_SRCS+=PosixSerialPort.cpp OSXPortFactory.cpp
-COMMON_CXXFLAGS=-arch x86_64 -mmacosx-version-min=10.9
-COMMON_LDFLAGS=-arch x86_64 -mmacosx-version-min=10.9
+COMMON_CXXFLAGS=-arch x86_64 -mmacosx-version-min=11 -std=c++14
+COMMON_LDFLAGS=-arch x86_64 -mmacosx-version-min=11
 APP=BOSSA.app
 DMG=bossa-$(VERSION).dmg
 VOLUME=BOSSA

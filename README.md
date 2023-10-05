@@ -1,16 +1,47 @@
-BOSSA 1.9.1
------------
+BOSSA (Rust-edition)
+--------------------
 
-[![Travis Status](https://travis-ci.org/kiibohd/BOSSA.svg?branch=master)](https://travis-ci.org/kiibohd/BOSSA) [![Appveyor Status](https://ci.appveyor.com/api/projects/status/fwbiiefsowxx071n?svg=true)](https://ci.appveyor.com/project/kiibohd/bossa)
+[![Rust Linux Status](https://github.com/kiibohd/BOSSA/workflows/rust_linux.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_linux.yml)
+[![Rust macOS Status](https://github.com/kiibohd/BOSSA/workflows/rust_macos.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_macos.yml)
+[![Rust Windows Status](https://github.com/kiibohd/BOSSA/workflows/rust_windows.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_windows.yml)
+[![Legacy Makefile Build Environment](https://github.com/kiibohd/BOSSA/workflows/build.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/build.yml)
+
+
+[![docs.rs](https://docs.rs/bossa/badge.svg)](https://docs.rs/bossa)
+[![Crates.io](https://img.shields.io/crates/v/bossa.svg)](https://crates.io/crates/bossa)
+[![Crates.io](https://img.shields.io/crates/l/bossa.svg)](https://crates.io/crates/bossa)
+[![Crates.io](https://img.shields.io/crates/d/bossa.svg)](https://crates.io/crates/bossa)
 
 BOSSA is a flash programming utility for Atmel's SAM family of flash-based ARM microcontrollers.
 The motivation behind BOSSA is to create a simple, easy-to-use, open source utility to replace Atmel's SAM-BA software.
 BOSSA is an acronym for Basic Open Source SAM-BA Application to reflect that goal.
 
-The software was created by Scott Shumate with contributions from several
-[contributors](../../graphs/contributors).
+The software was originally by Scott Shumate with contributions from several [contributors](../../graphs/contributors). Scott has not been active in a number of years and HaaTa needed a rust-lib version of BOSSA, hence this fork.
 
 The software is released under the terms of the BSD license as specified in the LICENSE file.
+
+Supported Builds
+----------------
+
+* Rust (libbossa, bossac)
+  - `cargo build`
+  - `cd bossac; cargo build; cargo run -- --help`
+  - Supports: msvc, macos, linux
+* C++ (bossa, bossac, bossash)
+  - `make -j`
+  - Supports: mingw, macos, linux
+    msvc support hasn't been tested recently
+
+Please see the [GitHub Actions](.github/workflows) for build specifics.
+
+Installation
+------------
+
+If you already have rust on your system, you can use it to easily install bossac.
+
+```bash
+cargo install bossac
+```
 
 Supported Device Families
 -------------------------
@@ -41,7 +72,9 @@ Supported Device Families
 
 \* Device families which are not tested for each release and could stop working.
 
-Do you want to help make sure a device family is tested or do you want to see a new device family added?  Then contribute a development board with a device from that family to the BOSSA project to make it happen.  Contact scott at shumatech.com if you are interested in helping the project.
+Please submit a PR if you're interested in fixing or adding support.
+
+*Actively looking for a co-maintainer for BOSSA*
 
 The following individuals and companies graciously provided development boards to assist the BOSSA project.
  * Atmel Corporation (SAM3N, SAM3S, SAM3U)

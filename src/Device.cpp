@@ -734,4 +734,7 @@ Device::reset()
     }
 }
 
-
+std::unique_ptr<Device> new_device(Samba& samba)
+{
+    return std::unique_ptr<Device>(new Device(samba));
+}
