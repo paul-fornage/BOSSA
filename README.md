@@ -1,10 +1,11 @@
 BOSSA (Rust-edition)
 --------------------
 
-[![Rust Linux Status](https://github.com/kiibohd/BOSSA/workflows/rust_linux.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_linux.yml)
-[![Rust macOS Status](https://github.com/kiibohd/BOSSA/workflows/rust_macos.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_macos.yml)
-[![Rust Windows Status](https://github.com/kiibohd/BOSSA/workflows/rust_windows.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_windows.yml)
-[![Legacy Makefile Build Environment](https://github.com/kiibohd/BOSSA/workflows/build.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/build.yml)
+[![Audit Dependencies](https://github.com/kiibohd/BOSSA/actions/workflows/audit.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/audit.yml)
+[![Legacy Makefile Build Environment](https://github.com/kiibohd/BOSSA/actions/workflows/build.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/build.yml)
+[![Rust Linux](https://github.com/kiibohd/BOSSA/actions/workflows/rust_linux.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_linux.yml)
+[![Rust macOS](https://github.com/kiibohd/BOSSA/actions/workflows/rust_macos.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_macos.yml)
+[![Rust Windows](https://github.com/kiibohd/BOSSA/actions/workflows/rust_windows.yml/badge.svg)](https://github.com/kiibohd/BOSSA/actions/workflows/rust_windows.yml)
 
 
 [![docs.rs](https://docs.rs/bossa/badge.svg)](https://docs.rs/bossa)
