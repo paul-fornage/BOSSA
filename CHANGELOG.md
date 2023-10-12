@@ -7,9 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.0.0 (2023-10-12)
 
+<csr-id-a96c5a09328b7839507bda60556290d7092345c7/>
+<csr-id-2ae59e09ba3aea699eebb35552d55e743ce25908/>
+<csr-id-25e8fdcfbcaf839b954957b1762e1ce098167a30/>
+<csr-id-62b1e65a2762baf607208c1dd84cd489e033f9da/>
+<csr-id-f83f741d07ef2d4fb10404a74bf2b9a9aa01ec09/>
+
 ### New Features
 
  - <csr-id-8e233bacc80b8bcca9a07821ea2a1891a26422b9/> Initial bossa library and bossac utility
+   - CXX Rust wrapper around bossa so it can be statically linked library
+   into rust utilities (this is useful for Windows applications rather
+   than relying on external processes).
+   * To get the rust wrapper to work some C++ changes were necessary to
+   cleanup the api. This probably would have been easier if the wider
+   C++ apis were const'd correctly but I err'd on the side of minimal
+   changes.
+* Keep Linux at 3.0 for Ubuntu GitHub Action
+ - <csr-id-8b29f5ac3b18d59edecc904fcfae612ebab78bcc/> Initial bossa library and bossac utility
    - CXX Rust wrapper around bossa so it can be statically linked library
      into rust utilities (this is useful for Windows applications rather
      than relying on external processes).
@@ -72,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - Initial bossa library and bossac utility ([`8e233ba`](https://github.com/kiibohd/BOSSA/commit/8e233bacc80b8bcca9a07821ea2a1891a26422b9))
+    - Initial bossa library and bossac utility ([`8b29f5a`](https://github.com/kiibohd/BOSSA/commit/8b29f5ac3b18d59edecc904fcfae612ebab78bcc))
     - Add missing include ([`a96c5a0`](https://github.com/kiibohd/BOSSA/commit/a96c5a09328b7839507bda60556290d7092345c7))
     - Add support for ATSAMR34J18 ([`599f5ee`](https://github.com/kiibohd/BOSSA/commit/599f5ee8072ea977f8e2fb5b9e1453e0c4686cb9))
     - Update Device.cpp ([`a26ab38`](https://github.com/kiibohd/BOSSA/commit/a26ab384cdb7180f0a830b95696cdffb67c777dc))
@@ -102,6 +117,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Add -V/--version command-line option ([`f83f741`](https://github.com/kiibohd/BOSSA/commit/f83f741d07ef2d4fb10404a74bf2b9a9aa01ec09))
     - Fixed bug in bossash mrf command submitted by fjhenigman ([`260d9e8`](https://github.com/kiibohd/BOSSA/commit/260d9e854f9af9517465bb05cd5c0017e0788a27))
 </details>
+
+<csr-unknown>
+bossac tries to be as close as possible to the C++ version of bossac(including cli args)Does not expose the complete bossa library api (only those necessaryfor bossac)An equivalent bossash should be possible, but I don’t really use it soleaving it open to future contributions.The bossa WxWidgets utility is more difficult, but might be possiblewith https://github.com/kenz-gelsoft/wxRust2.Personally, I would probably recommend https://github.com/KDAB/cxx-qt.But I don’t really use either so I’ll leave these as open to futurecontributions.The existing C++ binaries should continue to function/buildFix formbuilder warning (info)Update wxWidgets mostly to 3.2<csr-unknown/>
 
 ## v1.9.1 (2018-08-23)
 
