@@ -9,6 +9,7 @@ fn main() {
         "src/EfcFlash.cpp",
         "src/Flash.cpp",
         "src/Flasher.cpp",
+        "src/Info.cpp",
         #[cfg(target_os = "linux")]
         "src/LinuxPortFactory.cpp",
         #[cfg(target_os = "macos")]
@@ -34,6 +35,7 @@ fn main() {
         "src/EfcFlash.h",
         "src/Flash.h",
         "src/Flasher.h",
+        "src/Info.h",
         #[cfg(target_os = "linux")]
         "src/LinuxPortFactory.h",
         #[cfg(target_os = "macos")]
@@ -56,7 +58,7 @@ fn main() {
     //  cpp files to watch + build
     //  h files to watch
     //  rs files to watch
-    let mut build = cxx_build::bridge("src/lib.rs");
+    let mut build = cxx_build::bridges(rs_files.clone());
     for cpp in cpp_files {
         build.file(cpp);
         println!("cargo:rerun-if-changed={}", cpp);

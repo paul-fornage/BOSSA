@@ -1,4 +1,4 @@
-use bossa::bossa;
+use bossa::lib;
 use clap::Parser;
 use cxx::let_cxx_string;
 use flexi_logger::Logger;
@@ -170,8 +170,8 @@ pub fn main() -> std::process::ExitCode {
     let args = Args::parse();
     setup_logging_lite().unwrap();
 
-    let mut samba = bossa::new_samba();
-    let mut port_factory = bossa::new_port_factory();
+    let mut samba = lib::new_samba();
+    let mut port_factory = lib::new_port_factory();
 
     if args.debug {
         debug!("Debug mode enabled");
@@ -192,12 +192,10 @@ pub fn main() -> std::process::ExitCode {
         let mut port = port_factory.pin_mut().create_port(&port, args.usb_port);
 
         println!("Arduino 1200 baud reset");
-        if !port.pin_mut().open(
-            1200,
-            8,
-            bossa::Parity::ParityNone,
-            bossa::StopBit::StopBitOne,
-        ) {
+        if !port
+            .pin_mut()
+            .open(1200, 8, lib::Parity::ParityNone, lib::StopBit::StopBitOne)
+        {
             error!("Failed to open port at 1200bps");
             return std::process::ExitCode::FAILURE;
         }
@@ -222,14 +220,14 @@ pub fn main() -> std::process::ExitCode {
     }
 
     // Setup device connection
-    let mut device = bossa::new_device(samba.pin_mut());
+    let mut device = lib::new_device(samba.pin_mut());
     device.pin_mut().create();
-    let mut observer = bossa::new_bossa_observer();
-    let mut flasher = bossa::new_flasher(samba.pin_mut(), device.pin_mut(), observer.pin_mut());
+    let mut observer = lib::new_bossa_observer();
+    let mut flasher = lib::new_flasher(samba.pin_mut(), device.pin_mut(), observer.pin_mut());
 
     if args.info {
         debug!("Printing device info");
-        let mut flasher_info = bossa::new_flasher_info();
+        let mut flasher_info = lib::new_flasher_info();
         flasher.pin_mut().info(flasher_info.pin_mut());
         flasher_info.pin_mut().print();
     }

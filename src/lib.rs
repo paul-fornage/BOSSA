@@ -1,5 +1,5 @@
 #[cxx::bridge]
-pub mod bossa {
+pub mod lib {
     #[repr(u32)]
     enum Parity {
         ParityNone,
@@ -14,11 +14,40 @@ pub mod bossa {
         StopBitTwo,
     }
 
+    #[derive(Debug, Clone, Default)]
+    pub struct FlasherInfoRs {
+        name: String,
+        chipId: u32,
+        extChipId: u32,
+        version: String,
+        address: u32,
+        numPages: u32,
+        pageSize: u32,
+        totalSize: u32,
+        numPlanes: u32,
+
+        security: bool,
+        bootFlash: bool,
+        bod: bool,
+        bor: bool,
+
+        canBootFlash: bool,
+        canBod: bool,
+        canBor: bool,
+        canChipErase: bool,
+        canWriteBuffer: bool,
+        canChecksumBuffer: bool,
+
+        lockRegions: Vec<bool>,
+        uniqueId: Vec<u32>,
+    }
+
     unsafe extern "C++" {
         include!("bossa/src/BossaObserver.h");
         include!("bossa/src/Device.h");
         include!("bossa/src/Flash.h");
         include!("bossa/src/Flasher.h");
+        include!("bossa/src/Info.h");
         include!("bossa/src/PortFactory.h");
         include!("bossa/src/Samba.h");
         include!("bossa/src/SerialPort.h");
@@ -109,6 +138,9 @@ pub mod bossa {
 
         fn new_flasher_info() -> UniquePtr<FlasherInfo>;
 
+        /* FlasherInfoRs */
+        fn flasherinfo2flasherinfors(info: &FlasherInfo, rsinfo: &mut FlasherInfoRs);
+
         /* Samba */
         type Samba;
 
@@ -117,5 +149,16 @@ pub mod bossa {
         fn connect(self: Pin<&mut Samba>, port: UniquePtr<SerialPort>, bps: i32) -> bool;
 
         fn setDebug(self: Pin<&mut Samba>, debug: bool);
+    }
+}
+
+impl lib::FlasherInfoRs {
+    /// Print unique id in the same format as bossa does
+    pub fn unique_id(&self) -> String {
+        let mut id = String::new();
+        for i in 0..self.uniqueId.len() {
+            id.push_str(&format!("{:08x}", self.uniqueId[i]));
+        }
+        id
     }
 }
