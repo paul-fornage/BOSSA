@@ -20,8 +20,8 @@ pub fn main() -> std::process::ExitCode {
     // Setup device connection
     let mut device = lib::new_device(samba.pin_mut());
     device.pin_mut().create();
-    let mut oliberver = lib::new_bossa_observer();
-    let mut flasher = lib::new_flasher(samba.pin_mut(), device.pin_mut(), oliberver.pin_mut());
+    let mut observer = lib::new_bossa_observer();
+    let mut flasher = lib::new_flasher(samba.pin_mut(), device.pin_mut(), observer.pin_mut());
 
     // Get FlasherInfo
     let mut flasher_info = lib::new_flasher_info();
