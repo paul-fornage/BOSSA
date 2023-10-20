@@ -1,6 +1,6 @@
 [package]
 name = "bossa"
-version = "2.1.0"
+version = "2.2.0"
 authors = ["Jacob Alexander <haata@kiibohd.com>, Scott Shumate <scott@shumatech.com>"]
 description = "Rust cxx wrapper around BOSSA SAM-BA library"
 edition = "2021"

@@ -36,5 +36,8 @@ pub fn main() -> std::process::ExitCode {
     println!("{:#?}", info);
     println!("Unique Id: {}", info.unique_id());
 
+    // Print FlasherInfoRs info
+    println!("{}", info.info());
+
     std::process::ExitCode::SUCCESS
 }

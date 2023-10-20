@@ -161,4 +161,140 @@ impl lib::FlasherInfoRs {
         }
         id
     }
+
+    /// Info as the same format bossa prints
+    pub fn info(&self) -> String {
+        let mut out = String::new();
+        let align = 12;
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Device",
+                value = self.name
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Version",
+                value = self.version
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value:#x}\n",
+                align = align,
+                key = "Address",
+                value = self.address
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Pages",
+                value = self.numPages
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value} bytes\n",
+                align = align,
+                key = "Page Size",
+                value = self.pageSize,
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value} bytes\n",
+                align = align,
+                key = "Total Size",
+                value = self.totalSize
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Planes",
+                value = self.numPlanes
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Lock Regions",
+                value = self.lockRegions.len()
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Locked",
+                value = self.locked_regions(),
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Security",
+                value = self.security
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Boot Flash",
+                value = self.bootFlash
+            )
+            .as_str(),
+        );
+        out.push_str(
+            format!(
+                "{key:<align$} : {value}\n",
+                align = align,
+                key = "Unique Id",
+                value = self.unique_id()
+            )
+            .as_str(),
+        );
+        out
+    }
+
+    fn locked_regions(&self) -> String {
+        let mut out = String::new();
+        let mut any_locked = false;
+        for (i, locked) in self.lockRegions.iter().enumerate() {
+            if *locked {
+                if !any_locked {
+                    any_locked = true;
+                    out.push_str(format!("{}", i).as_str());
+                } else {
+                    out.push_str(format!(",{}", i).as_str());
+                }
+            }
+        }
+
+        // No regions locked
+        if !any_locked {
+            out = "none".to_string();
+        }
+        out
+    }
 }
