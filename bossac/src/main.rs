@@ -1,8 +1,9 @@
 use bossa::lib;
 use clap::Parser;
-use cxx::let_cxx_string;
+use cxx::{let_cxx_string, CxxString};
 use flexi_logger::Logger;
 use log::{debug, error};
+use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
 
@@ -222,7 +223,12 @@ pub fn main() -> std::process::ExitCode {
     // Setup device connection
     let mut device = lib::new_device(samba.pin_mut());
     device.pin_mut().create();
-    let mut observer = lib::new_bossa_observer();
+    extern "C" fn callback(message: &CxxString) {
+        print!("{}", message);
+        let _ = std::io::stdout().flush();
+    }
+    let callback = bossa::ObserverCallback(callback);
+    let mut observer = unsafe { lib::new_bossa_observer(callback) };
     let mut flasher = lib::new_flasher(samba.pin_mut(), device.pin_mut(), observer.pin_mut());
 
     if args.info {

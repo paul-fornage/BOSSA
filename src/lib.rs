@@ -1,3 +1,5 @@
+use cxx::{type_id, CxxString, ExternType};
+
 #[cxx::bridge]
 pub mod lib {
     #[repr(u32)]
@@ -93,7 +95,10 @@ pub mod lib {
         /* FlasherObserver */
         type FlasherObserver;
 
-        fn new_bossa_observer() -> UniquePtr<FlasherObserver>;
+        type ObserverCallback = crate::ObserverCallback;
+
+        /// # Safety
+        unsafe fn new_bossa_observer(callback: ObserverCallback) -> UniquePtr<FlasherObserver>;
 
         /* Flash */
         type Flash;
@@ -150,6 +155,14 @@ pub mod lib {
 
         fn setDebug(self: Pin<&mut Samba>, debug: bool);
     }
+}
+
+#[repr(transparent)]
+pub struct ObserverCallback(pub extern "C" fn(message: &CxxString));
+
+unsafe impl ExternType for ObserverCallback {
+    type Id = type_id!("ObserverCallback");
+    type Kind = cxx::kind::Trivial;
 }
 
 impl lib::FlasherInfoRs {
