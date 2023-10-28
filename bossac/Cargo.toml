@@ -1,6 +1,6 @@
 [package]
 name = "bossac"
-version = "2.1.0"
+version = "2.1.1"
 authors = ["Jacob Alexander <haata@kiibohd.com>, Scott Shumate <scott@shumatech.com>"]
 description = "Rust cxx version of the BOSSA SAM-BA utility"
 edition = "2021"
@@ -8,7 +8,7 @@ license = "BSD-3-Clause"
 repository = "https://github.com/kiibohd/BOSSA"
 
 [dependencies]
-bossa = { path = "..", version = "2.0.0" }
+bossa = { path = "..", version = "2.3.0" }
 clap = { version = "4.4", features = ["derive"] }
 cxx = "1.0"
 log = "0.4"
