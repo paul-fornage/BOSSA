@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.3.0 (2023-10-28)
+
+### Bug Fixes
+
+ - <csr-id-062479b4b21403c5c3c04ea0e87298360672222f/> BossaObserver now sends output through callback
+   - Allows for fully capturing output of functions (instead of being
+     printed to stdout)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 1 commit contributed to the release over the course of 1 calendar day.
+ - 7 days passed between releases.
+ - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - BossaObserver now sends output through callback ([`062479b`](https://github.com/kiibohd/BOSSA/commit/062479b4b21403c5c3c04ea0e87298360672222f))
+</details>
+
 ## v2.2.0 (2023-10-20)
 
 ### New Features
@@ -36,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - <csr-id-1e44ef128812cce37e6ade4c1a435cd4438313ed/> FlasherInfoRs
    - Convenient Rust struct to access FlasherInfo fields natively
-   * Includes unique_id() to get the string version of the unique id as
+* Includes unique_id() to get the string version of the unique id as
    shown by bossa
 
 ### Commit Statistics
@@ -57,9 +84,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **Uncategorized**
     - FlasherInfoRs ([`1e44ef1`](https://github.com/kiibohd/BOSSA/commit/1e44ef128812cce37e6ade4c1a435cd4438313ed))
 </details>
-
-<csr-unknown>
-Rename mod bossa to lib (rust compiler gets confused with too manybossa module/crates names)Add example on how to use FlasherInfoRs<csr-unknown/>
 
 ## v2.0.0 (2023-10-12)
 
