@@ -8,28 +8,21 @@ use std::path::PathBuf;
 use std::time::Instant;
 
 /// Parse integer with support for hex (0x) and octal (0) prefixes, like strtol with base 0
-fn parse_int_with_prefix(s: &str) -> Result<u32, String> {
+fn parse_uint_with_prefix<T: num_traits::Unsigned + std::str::FromStr>(s: &str) -> Result<T, String>
+    where <T as num_traits::Num>::FromStrRadixErr: std::fmt::Debug, <T as std::str::FromStr>::Err: std::fmt::Debug
+{
     let s = s.trim();
     if let Some(hex) = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")) {
-        u32::from_str_radix(hex, 16).map_err(|e| format!("invalid hex number: {}", e))
+        T::from_str_radix(hex, 16).map_err(|e| format!("invalid hex number (leading 0x is octal): {:?}", e))
+    } else if let Some(bin) = s.strip_prefix("0b").or_else(|| s.strip_prefix("0B")) {
+        T::from_str_radix(bin, 2).map_err(|e| format!("invalid binary number (leading 0b is octal): {:?}", e))
     } else if s.len() > 1 && s.starts_with('0') && s.chars().all(|c| c.is_ascii_digit()) {
-        u32::from_str_radix(&s[1..], 8).map_err(|e| format!("invalid octal number: {}", e))
+        T::from_str_radix(&s[1..], 8).map_err(|e| format!("invalid octal number (leading 0 is octal): {:?}", e))
     } else {
-        s.parse::<u32>().map_err(|e| format!("invalid decimal number: {}", e))
+        s.parse::<T>().map_err(|e| format!("invalid decimal number: {:?}", e))
     }
 }
 
-/// Parse u16 with support for hex (0x) and octal (0) prefixes
-fn parse_u16_with_prefix(s: &str) -> Result<u16, String> {
-    let s = s.trim();
-    if let Some(hex) = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")) {
-        u16::from_str_radix(hex, 16).map_err(|e| format!("invalid hex number: {}", e))
-    } else if s.len() > 1 && s.starts_with('0') && s.chars().all(|c| c.is_ascii_digit()) {
-        u16::from_str_radix(&s[1..], 8).map_err(|e| format!("invalid octal number: {}", e))
-    } else {
-        s.parse::<u16>().map_err(|e| format!("invalid decimal number: {}", e))
-    }
-}
 
 #[derive(Parser, Debug)]
 #[command(
@@ -58,7 +51,8 @@ struct Args {
     #[arg(short, long, requires = "file", default_value = "false")]
     write: bool,
 
-    /// read SIZE from flash and store in FILE;
+    /// read SIZE from flash and store in FILE. Size in bytes.
+    /// Needs equal sign to specify size, like `-r=1000 read_fw.bin`
     /// read entire flash if SIZE not specified
     #[arg(
         short,
@@ -68,7 +62,8 @@ struct Args {
         num_args = 0..=1,
         requires = "file",
         default_value = None,
-        default_missing_value = "0"
+        default_missing_value = "0",
+        value_parser = parse_uint_with_prefix::<u32>
     )]
     read: Option<u32>,
 
@@ -78,7 +73,12 @@ struct Args {
 
     /// start erase/write/read/verify operation at flash OFFSET;
     /// OFFSET must be aligned to a flash page boundary
-    #[arg(short, long, default_value_t = 0)]
+    #[arg(
+        short,
+        long,
+        default_value_t = 0,
+        value_parser = parse_uint_with_prefix::<u32>
+    )]
     offset: u32,
 
     /// use serial PORT to communicate to device;
@@ -134,7 +134,7 @@ struct Args {
         value_name = "REGION",
         value_delimiter = ',',
         num_args = 0..,
-        value_parser = clap::value_parser!(u16).range(0..),
+        value_parser = parse_uint_with_prefix::<u16>,
         default_value = None
     )]
     lock: Option<Vec<u16>>,
@@ -147,7 +147,7 @@ struct Args {
         value_name = "REGION",
         value_delimiter = ',',
         num_args = 0..,
-        value_parser = clap::value_parser!(u16).range(0..),
+        value_parser = parse_uint_with_prefix::<u16>,
         default_value = None
     )]
     unlock: Option<Vec<u16>>,

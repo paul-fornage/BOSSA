@@ -13,3 +13,4 @@ clap = { version = "4.4", features = ["derive"] }
 cxx = "1.0"
 log = "0.4"
 flexi_logger = "0.25"
+num-traits = "0.2.19"
