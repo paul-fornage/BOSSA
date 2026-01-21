@@ -11,6 +11,7 @@ install/*.p12
 
 Cargo.lock
 target/
+.idea
 
 # Extras for building with MSVC
 x64/

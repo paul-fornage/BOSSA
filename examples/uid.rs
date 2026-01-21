@@ -20,7 +20,9 @@ pub fn main() -> std::process::ExitCode {
     // Setup device connection
     let mut device = lib::new_device(samba.pin_mut());
     device.pin_mut().create();
-    let mut observer = lib::new_bossa_observer();
+    let log_observer_callback = bossa::ObserverCallback(log_observer_fn);
+    let prog_observer_callback = bossa::ProgressCallback(prog_observer_fn);
+    let mut observer = unsafe { lib::new_bossa_observer_with_progress(log_observer_callback, prog_observer_callback) };
     let mut flasher = lib::new_flasher(samba.pin_mut(), device.pin_mut(), observer.pin_mut());
 
     // Get FlasherInfo
@@ -34,10 +36,34 @@ pub fn main() -> std::process::ExitCode {
     lib::flasherinfo2flasherinfors(&flasher_info.pin_mut(), &mut info);
     // Print struct and unique id
     println!("{:#?}", info);
-    println!("Unique Id: {}", info.unique_id());
-
-    // Print FlasherInfoRs info
     println!("{}", info.info());
 
+
     std::process::ExitCode::SUCCESS
+}
+
+extern "C" fn log_observer_fn(message: &cxx::CxxString) {
+    match message.to_str(){
+        Ok(str) => {eprint!("{}", str)},
+        _ => {eprint!("Failed to convert message to utf8 string");}
+    }
+}
+
+extern "C" fn prog_observer_fn(current: i32, total: i32) {
+    const PROGRESS_BAR_WIDTH: usize = 32;
+    let mut progress = current as f64 / total as f64;
+    if progress < 0.0 { progress = 0.0; }
+    if progress > 1.0 { progress = 1.0; }
+
+    let percent = progress * 100.0;
+
+    let progress_bar_len = (progress * PROGRESS_BAR_WIDTH as f64).round() as usize;
+
+    let mut progress_bar: [u8; PROGRESS_BAR_WIDTH] = [b' '; PROGRESS_BAR_WIDTH];
+    progress_bar[..progress_bar_len].fill(b'=');
+    // Safety: progress_bar is initialized with '=' and ' '
+    let progress_str = str::from_utf8(&progress_bar).unwrap();
+
+    // bossa c prints use eprint, and otherwise they desync from OS buffering
+    eprint!("\r[{progress_str}] {percent:>6.2}% ({current}/{total})");
 }

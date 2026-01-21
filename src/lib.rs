@@ -96,10 +96,19 @@ pub mod lib {
         type FlasherObserver;
 
         type ObserverCallback = crate::ObserverCallback;
+        type ProgressCallback = crate::ProgressCallback;
+
 
         /// # Safety
-        unsafe fn new_bossa_observer(callback: ObserverCallback) -> UniquePtr<FlasherObserver>;
+        unsafe fn new_bossa_observer_with_progress(
+            callback: ObserverCallback,
+            progress: ProgressCallback
+        ) -> UniquePtr<FlasherObserver>;
 
+        unsafe fn new_bossa_observer(
+            callback: ObserverCallback,
+        ) -> UniquePtr<FlasherObserver>;
+        
         /* Flash */
         type Flash;
 
@@ -159,6 +168,14 @@ pub mod lib {
 
 #[repr(transparent)]
 pub struct ObserverCallback(pub extern "C" fn(message: &CxxString));
+
+#[repr(transparent)]
+pub struct ProgressCallback(pub extern "C" fn(current: i32, total: i32));
+
+unsafe impl ExternType for ProgressCallback {
+    type Id = type_id!("ProgressCallback");
+    type Kind = cxx::kind::Trivial;
+}
 
 unsafe impl ExternType for ObserverCallback {
     type Id = type_id!("ObserverCallback");
@@ -291,23 +308,15 @@ impl lib::FlasherInfoRs {
     }
 
     fn locked_regions(&self) -> String {
-        let mut out = String::new();
-        let mut any_locked = false;
-        for (i, locked) in self.lockRegions.iter().enumerate() {
-            if *locked {
-                if !any_locked {
-                    any_locked = true;
-                    out.push_str(format!("{}", i).as_str());
-                } else {
-                    out.push_str(format!(",{}", i).as_str());
-                }
-            }
+        let locked_regions = self.lockRegions.iter().enumerate().filter_map(|(i, v)| {
+            if *v { Some(i as u32) } else { None }
+        }).collect::<Vec<u32>>();
+        if locked_regions.is_empty() {
+            String::from("None")
+        } else {
+            let list_str = locked_regions.iter().map(|i| i.to_string()).collect::<Vec<String>>().join(", ");
+            format!("[{}]", list_str)
         }
-
-        // No regions locked
-        if !any_locked {
-            out = "none".to_string();
-        }
-        out
     }
 }
+

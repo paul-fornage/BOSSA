@@ -4,8 +4,7 @@
 
 #include "BossaObserver.h"
 
-std::string
-format(const char *fmt, va_list args)
+std::string format(const char *fmt, va_list args)
 {
     char buf[256];
     const auto r = std::vsnprintf(buf, sizeof buf, fmt, args);
@@ -29,8 +28,7 @@ format(const char *fmt, va_list args)
     return s;
 }
 
-void
-BossaObserver::onStatus(const char *message, ...)
+void BossaObserver::onStatus(const char *message, ...)
 {
     va_list args;
     va_start(args, message);
@@ -38,34 +36,42 @@ BossaObserver::onStatus(const char *message, ...)
     va_end(args);
 }
 
-void
-BossaObserver::onProgress(int num, int div)
+void BossaObserver::onProgress(int num, int div)
 {
-    int ticks;
-    int bars = 30;
+    if (progressFunc) {
+        progressFunc(num, div);
+    } else {
+		int ticks;
+   		int bars = 30;
 
-    ticks = num * bars / div;
+        ticks = num * bars / div;
 
-    if (ticks == _lastTicks)
-        return;
+        if (ticks == _lastTicks)
+            return;
 
+        printFunc("\r[");
+        while (ticks-- > 0)
+        {
+            printFunc("=");
+            bars--;
+        }
+        while (bars-- > 0)
+        {
+            printFunc(" ");
+        }
+        onStatus("] %d%% (%d/%d pages)", num * 100 / div, num, div);
 
-    printFunc("\r[");
-    while (ticks-- > 0)
-    {
-        printFunc("=");
-        bars--;
-    }
-    while (bars-- > 0)
-    {
-        printFunc(" ");
-    }
-    onStatus("] %d%% (%d/%d pages)", num * 100 / div, num, div);
-
-    _lastTicks = 0;
+        _lastTicks = 0;
+	}
 }
 
-std::unique_ptr<FlasherObserver> new_bossa_observer(ObserverCallback print)
+std::unique_ptr<FlasherObserver> new_bossa_observer_with_progress(ObserverCallback print, ProgressCallback progress)
 {
-    return std::unique_ptr<FlasherObserver>(new BossaObserver(print));
+    return std::unique_ptr<FlasherObserver>(new BossaObserver(print, progress));
 }
+
+std::unique_ptr<FlasherObserver> new_bossa_observer(ObserverCallback print) 
+{
+	return new_bossa_observer_with_progress(print, nullptr);    
+}
+

@@ -7,6 +7,30 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
 
+/// Parse integer with support for hex (0x) and octal (0) prefixes, like strtol with base 0
+fn parse_int_with_prefix(s: &str) -> Result<u32, String> {
+    let s = s.trim();
+    if let Some(hex) = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")) {
+        u32::from_str_radix(hex, 16).map_err(|e| format!("invalid hex number: {}", e))
+    } else if s.len() > 1 && s.starts_with('0') && s.chars().all(|c| c.is_ascii_digit()) {
+        u32::from_str_radix(&s[1..], 8).map_err(|e| format!("invalid octal number: {}", e))
+    } else {
+        s.parse::<u32>().map_err(|e| format!("invalid decimal number: {}", e))
+    }
+}
+
+/// Parse u16 with support for hex (0x) and octal (0) prefixes
+fn parse_u16_with_prefix(s: &str) -> Result<u16, String> {
+    let s = s.trim();
+    if let Some(hex) = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")) {
+        u16::from_str_radix(hex, 16).map_err(|e| format!("invalid hex number: {}", e))
+    } else if s.len() > 1 && s.starts_with('0') && s.chars().all(|c| c.is_ascii_digit()) {
+        u16::from_str_radix(&s[1..], 8).map_err(|e| format!("invalid octal number: {}", e))
+    } else {
+        s.parse::<u16>().map_err(|e| format!("invalid decimal number: {}", e))
+    }
+}
+
 #[derive(Parser, Debug)]
 #[command(
     author,
@@ -223,12 +247,10 @@ pub fn main() -> std::process::ExitCode {
     // Setup device connection
     let mut device = lib::new_device(samba.pin_mut());
     device.pin_mut().create();
-    extern "C" fn callback(message: &CxxString) {
-        print!("{}", message);
-        let _ = std::io::stdout().flush();
-    }
-    let callback = bossa::ObserverCallback(callback);
-    let mut observer = unsafe { lib::new_bossa_observer(callback) };
+
+    let log_observer = bossa::ObserverCallback(log_observer_fn);
+    let prog_observer_callback = bossa::ProgressCallback(prog_observer_fn);
+    let mut observer = unsafe { lib::new_bossa_observer_with_progress(log_observer, prog_observer_callback) };
     let mut flasher = lib::new_flasher(samba.pin_mut(), device.pin_mut(), observer.pin_mut());
 
     if args.info {
@@ -394,4 +416,32 @@ pub fn main() -> std::process::ExitCode {
 
     debug!("Done");
     std::process::ExitCode::SUCCESS
+}
+
+
+
+extern "C" fn log_observer_fn(message: &CxxString) {
+    match message.to_str(){
+        Ok(str) => {debug!("{}", str)},
+        _ => {eprint!("Failed to convert message to utf8 string");}
+    }
+}
+
+extern "C" fn prog_observer_fn(current: i32, total: i32) {
+    const PROGRESS_BAR_WIDTH: usize = 32;
+    let mut progress = current as f64 / total as f64;
+    if progress < 0.0 { progress = 0.0; }
+    if progress > 1.0 { progress = 1.0; }
+
+    let percent = progress * 100.0;
+
+    let progress_bar_len = (progress * PROGRESS_BAR_WIDTH as f64).round() as usize;
+
+    let mut progress_bar: [u8; PROGRESS_BAR_WIDTH] = [b' '; PROGRESS_BAR_WIDTH];
+    progress_bar[..progress_bar_len].fill(b'=');
+    // Safety: progress_bar is initialized with '=' and ' '
+    let progress_str = str::from_utf8(&progress_bar).unwrap();
+
+    // bossa c prints use eprint, and otherwise they desync from OS buffering
+    eprint!("\r[{progress_str}] {percent:>6.2}% ({current}/{total})");
 }

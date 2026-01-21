@@ -5,12 +5,14 @@
 #include "Flasher.h"
 
 using ObserverCallback = void(*)(const std::string &message);
+using ProgressCallback = void(*)(int current, int total);
 
 class BossaObserver : public FlasherObserver
 {
 public:
-    BossaObserver(ObserverCallback print) : _lastTicks(-1) {
+    BossaObserver(ObserverCallback print, ProgressCallback progress) : _lastTicks(-1) {
         printFunc = print;
+        progressFunc = progress;
     }
     virtual ~BossaObserver() {}
 
@@ -19,8 +21,10 @@ public:
 private:
     int _lastTicks;
     ObserverCallback printFunc;
+    ProgressCallback progressFunc;
 };
 
+std::unique_ptr<FlasherObserver> new_bossa_observer_with_progress(ObserverCallback print, ProgressCallback progress);
 std::unique_ptr<FlasherObserver> new_bossa_observer(ObserverCallback print);
 
 #endif // _BOSSAOBSERVER_H
