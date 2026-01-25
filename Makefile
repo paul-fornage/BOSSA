@@ -9,12 +9,12 @@ WXVERSION=3.0
 #
 # Source files
 #
-COMMON_SRCS=Samba.cpp Flash.cpp D5xNvmFlash.cpp D2xNvmFlash.cpp EfcFlash.cpp EefcFlash.cpp Applet.cpp WordCopyApplet.cpp Flasher.cpp Device.cpp
-APPLET_SRCS=WordCopyArm.asm
-BOSSA_SRCS=BossaForm.cpp BossaWindow.cpp BossaAbout.cpp BossaApp.cpp BossaBitmaps.cpp BossaInfo.cpp BossaThread.cpp BossaProgress.cpp
+COMMON_SRCS=lib/Samba.cpp lib/Flash.cpp lib/D5xNvmFlash.cpp lib/D2xNvmFlash.cpp lib/EfcFlash.cpp lib/EefcFlash.cpp lib/Applet.cpp lib/WordCopyApplet.cpp lib/Flasher.cpp lib/Device.cpp
+APPLET_SRCS=lib/WordCopyArm.asm
+BOSSA_SRCS=gui/BossaForm.cpp gui/BossaWindow.cpp gui/BossaAbout.cpp gui/BossaApp.cpp gui/BossaBitmaps.cpp gui/BossaInfo.cpp gui/BossaThread.cpp gui/BossaProgress.cpp
 BOSSA_BMPS=BossaLogo.bmp BossaIcon.bmp ShumaTechLogo.bmp
-BOSSAC_SRCS=bossac.cpp CmdOpts.cpp
-BOSSASH_SRCS=bossash.cpp Shell.cpp Command.cpp
+BOSSAC_SRCS=cli/bossac.cpp cli/CmdOpts.cpp
+BOSSASH_SRCS=cli/bossash.cpp cli/Shell.cpp cli/Command.cpp
 
 #
 # Build directories
@@ -24,6 +24,7 @@ OBJDIR=obj
 SRCDIR=src
 RESDIR=res
 INSTALLDIR=install
+BOSSA_BMPDIR=$(SRCDIR)/gui
 
 #
 # Determine OS
@@ -37,7 +38,7 @@ ifeq ($(OS),MINGW32)
 # Use wxWindows development branch to work around font scaling issues on Windows
 WXVERSION=3.2
 EXE=.exe
-COMMON_SRCS+=WinSerialPort.cpp WinPortFactory.cpp
+COMMON_SRCS+=lib/serial/WinSerialPort.cpp lib/serial/WinPortFactory.cpp
 COMMON_LDFLAGS=-Wl,--enable-auto-import -static -static-libstdc++ -static-libgcc
 COMMON_LIBS=-ltermcap -Wl,--as-needed -lsetupapi -lole32
 COMMON_CXXFLAGS=-std=c++14
@@ -84,7 +85,7 @@ endif
 # Linux rules
 #
 ifeq ($(OS),Linux)
-COMMON_SRCS+=PosixSerialPort.cpp LinuxPortFactory.cpp
+COMMON_SRCS+=lib/serial/PosixSerialPort.cpp lib/serial/LinuxPortFactory.cpp
 COMMON_LIBS=-Wl,--as-needed
 COMMON_CXXFLAGS=-std=c++14
 WX_LIBS+=-lX11
@@ -100,7 +101,7 @@ endif
 #
 ifeq ($(OS),Darwin)
 WXVERSION=3.2
-COMMON_SRCS+=PosixSerialPort.cpp OSXPortFactory.cpp
+COMMON_SRCS+=lib/serial/PosixSerialPort.cpp lib/serial/OSXPortFactory.cpp
 COMMON_CXXFLAGS=-arch x86_64 -mmacosx-version-min=11 -std=c++14
 COMMON_LDFLAGS=-arch x86_64 -mmacosx-version-min=11
 APP=BOSSA.app
@@ -137,7 +138,7 @@ endif
 #
 ifeq ($(OS),OpenBSD)
 
-COMMON_SRCS+=PosixSerialPort.cpp BSDPortFactory.cpp
+COMMON_SRCS+=lib/serial/PosixSerialPort.cpp lib/serial/BSDPortFactory.cpp
 
 # This is only needed for bossash, but we can't add it to BOSSASH_LIBS here
 # because that one is redefined later.
@@ -159,7 +160,7 @@ ifeq (${OS},FreeBSD)
 
 # This is only needed for bossash, but we can't add it to BOSSASH_LIBS here
 # because that one is redefined later.
-COMMON_SRCS+=PosixSerialPort.cpp BSDPortFactory.cpp
+COMMON_SRCS+=lib/serial/PosixSerialPort.cpp lib/serial/BSDPortFactory.cpp
 
 endif
 
@@ -196,7 +197,7 @@ ARMOBJCOPY=$(ARM)objcopy
 #
 # CXX Flags
 #
-COMMON_CXXFLAGS+=-Wall -Werror -MT $@ -MD -MP -MF $(@:%.o=%.d) -DVERSION=\"$(VERSION)\" -g -O2 $(CXXFLAGS)
+COMMON_CXXFLAGS+=-Wall -Werror -MT $@ -MD -MP -MF $(@:%.o=%.d) -DVERSION=\"$(VERSION)\" -g -O2 -I$(SRCDIR) -I$(SRCDIR)/lib -I$(SRCDIR)/lib/serial -I$(SRCDIR)/cli -I$(SRCDIR)/gui $(CXXFLAGS)
 WX_CXXFLAGS:=$(shell wx-config --cxxflags --version=$(WXVERSION)) -DWX_PRECOMP -Wno-ctor-dtor-privacy -O2 -fno-strict-aliasing
 BOSSA_CXXFLAGS=$(COMMON_CXXFLAGS) $(WX_CXXFLAGS)
 BOSSAC_CXXFLAGS=$(COMMON_CXXFLAGS)
@@ -243,7 +244,7 @@ $(SRCDIR)/$(1:%.asm=%.cpp): $(SRCDIR)/$(1)
 	@echo APPLET $(1:%.asm=%)
 	$$(Q)$$(ARMAS) -o $$(@:$(SRCDIR)/%.cpp=$(OBJDIR)/%.obj) $$<
 	$$(Q)$$(ARMOBJCOPY) -O binary $$(@:$(SRCDIR)/%.cpp=$(OBJDIR)/%.obj) $$(@:$(SRCDIR)/%.cpp=$(OBJDIR)/%.bin)
-	$$(Q)./appletgen $(1:%.asm=%) $(SRCDIR) $(OBJDIR)
+	$$(Q)./appletgen $$(notdir $(1:%.asm=%)) $$(dir $(SRCDIR)/$(1)) $(OBJDIR)
 $(OBJDIR)/$(1:%.asm=%.o): $(SRCDIR)/$(1:%.asm=%.cpp)
 	@echo CPP APPLET $$<
 	$$(Q)$$(CXX) $$(COMMON_CXXFLAGS) -c -o $$(@) $$(<:%.asm=%.cpp)
@@ -293,7 +294,7 @@ $(foreach src,$(BOSSASH_SRCS),$(eval $(call bossash_obj,$(src))))
 # BMP rules
 #
 define bossa_bmp
-$(SRCDIR)/$(1:%.bmp=%.cpp): $(RESDIR)/$(1)
+$(BOSSA_BMPDIR)/$(1:%.bmp=%.cpp): $(RESDIR)/$(1)
 	@echo BIN2C $$<
 	$(Q)bin2c $$< $$@
 endef
@@ -305,23 +306,35 @@ $(foreach bmp,$(BOSSA_BMPS),$(eval $(call bossa_bmp,$(bmp))))
 $(OBJDIR):
 	@mkdir $@
 
+$(OBJDIR)/lib:
+	@mkdir -p $@
+
+$(OBJDIR)/cli:
+	@mkdir -p $@
+
+$(OBJDIR)/gui:
+	@mkdir -p $@
+
+$(OBJDIR)/lib/serial:
+	@mkdir -p $@
+
 $(BINDIR):
 	@mkdir $@
 
 #
 # Target rules
 #
-$(BOSSA_OBJS): | $(OBJDIR)
-$(BINDIR)/bossa$(EXE): $(foreach bmp,$(BOSSA_BMPS),$(SRCDIR)/$(bmp:%.bmp=%.cpp)) $(BOSSA_OBJS) | $(BINDIR)
+$(BOSSA_OBJS): | $(OBJDIR) $(OBJDIR)/lib $(OBJDIR)/lib/serial $(OBJDIR)/gui
+$(BINDIR)/bossa$(EXE): $(foreach bmp,$(BOSSA_BMPS),$(BOSSA_BMPDIR)/$(bmp:%.bmp=%.cpp)) $(BOSSA_OBJS) | $(BINDIR)
 	@echo LD $@
 	$(Q)$(CXX) $(BOSSA_LDFLAGS) -o $@ $(BOSSA_OBJS) $(BOSSA_LIBS)
 
-$(BOSSAC_OBJS): | $(OBJDIR)
+$(BOSSAC_OBJS): | $(OBJDIR) $(OBJDIR)/lib $(OBJDIR)/lib/serial $(OBJDIR)/cli
 $(BINDIR)/bossac$(EXE): $(BOSSAC_OBJS) | $(BINDIR)
 	@echo LD $@
 	$(Q)$(CXX) $(BOSSAC_LDFLAGS) -o $@ $(BOSSAC_OBJS) $(BOSSAC_LIBS)
 
-$(BOSSASH_OBJS): | $(OBJDIR)
+$(BOSSASH_OBJS): | $(OBJDIR) $(OBJDIR)/lib $(OBJDIR)/lib/serial $(OBJDIR)/cli
 $(BINDIR)/bossash$(EXE): $(BOSSASH_OBJS) | $(BINDIR)
 	@echo LD $@
 	$(Q)$(CXX) $(BOSSASH_LDFLAGS) -o $@ $(BOSSASH_OBJS) $(BOSSASH_LIBS)

@@ -1,56 +1,56 @@
 fn main() {
     let cpp_files = vec![
-        "src/Applet.cpp",
-        "src/BossaObserver.cpp",
-        "src/D2xNvmFlash.cpp",
-        "src/D5xNvmFlash.cpp",
-        "src/Device.cpp",
-        "src/EefcFlash.cpp",
-        "src/EfcFlash.cpp",
-        "src/Flash.cpp",
-        "src/Flasher.cpp",
-        "src/Info.cpp",
+        "src/lib/Applet.cpp",
+        "src/gui/BossaObserver.cpp",
+        "src/lib/D2xNvmFlash.cpp",
+        "src/lib/D5xNvmFlash.cpp",
+        "src/lib/Device.cpp",
+        "src/lib/EefcFlash.cpp",
+        "src/lib/EfcFlash.cpp",
+        "src/lib/Flash.cpp",
+        "src/lib/Flasher.cpp",
+        "src/lib/Info.cpp",
         #[cfg(target_os = "linux")]
-        "src/LinuxPortFactory.cpp",
+        "src/lib/serial/LinuxPortFactory.cpp",
         #[cfg(target_os = "macos")]
-        "src/OSXPortFactory.cpp",
-        "src/PortFactory.cpp",
+        "src/lib/serial/OSXPortFactory.cpp",
+        "src/lib/serial/PortFactory.cpp",
         #[cfg(target_family = "unix")]
-        "src/PosixSerialPort.cpp",
-        "src/Samba.cpp",
+        "src/lib/serial/PosixSerialPort.cpp",
+        "src/lib/Samba.cpp",
         #[cfg(target_os = "windows")]
-        "src/WinPortFactory.cpp",
+        "src/lib/serial/WinPortFactory.cpp",
         #[cfg(target_os = "windows")]
-        "src/WinSerialPort.cpp",
-        "src/WordCopyApplet.cpp",
-        "src/WordCopyArm.cpp",
+        "src/lib/serial/WinSerialPort.cpp",
+        "src/lib/WordCopyApplet.cpp",
+        "src/lib/WordCopyArm.cpp",
     ];
     let h_files = vec![
-        "src/Applet.h",
-        "src/BossaObserver.h",
-        "src/D2xNvmFlash.h",
-        "src/D5xNvmFlash.h",
-        "src/Device.h",
-        "src/EefcFlash.h",
-        "src/EfcFlash.h",
-        "src/Flash.h",
-        "src/Flasher.h",
-        "src/Info.h",
+        "src/lib/Applet.h",
+        "src/gui/BossaObserver.h",
+        "src/lib/D2xNvmFlash.h",
+        "src/lib/D5xNvmFlash.h",
+        "src/lib/Device.h",
+        "src/lib/EefcFlash.h",
+        "src/lib/EfcFlash.h",
+        "src/lib/Flash.h",
+        "src/lib/Flasher.h",
+        "src/lib/Info.h",
         #[cfg(target_os = "linux")]
-        "src/LinuxPortFactory.h",
+        "src/lib/serial/LinuxPortFactory.h",
         #[cfg(target_os = "macos")]
-        "src/OSXPortFactory.h",
-        "src/PortFactory.h",
+        "src/lib/serial/OSXPortFactory.h",
+        "src/lib/serial/PortFactory.h",
         #[cfg(target_family = "unix")]
-        "src/PosixSerialPort.h",
-        "src/Samba.h",
-        "src/SerialPort.h",
+        "src/lib/serial/PosixSerialPort.h",
+        "src/lib/Samba.h",
+        "src/lib/serial/SerialPort.h",
         #[cfg(target_os = "windows")]
-        "src/WinPortFactory.h",
+        "src/lib/serial/WinPortFactory.h",
         #[cfg(target_os = "windows")]
-        "src/WinSerialPort.h",
-        "src/WordCopyApplet.h",
-        "src/WordCopyArm.h",
+        "src/lib/serial/WinSerialPort.h",
+        "src/lib/WordCopyApplet.h",
+        "src/lib/WordCopyArm.h",
     ];
     let rs_files = vec!["src/lib.rs"];
 
@@ -73,6 +73,12 @@ fn main() {
     // Extra includes needed for msvc environments
     #[cfg(target_env = "msvc")]
     build.include("src/msvc");
+
+    build
+        .include("src")
+        .include("src/lib")
+        .include("src/lib/serial")
+        .include("src/gui");
 
     build.flag_if_supported("-std=c++14").compile("bossa");
 }

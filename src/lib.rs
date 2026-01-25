@@ -45,14 +45,14 @@ pub mod lib {
     }
 
     unsafe extern "C++" {
-        include!("bossa/src/BossaObserver.h");
-        include!("bossa/src/Device.h");
-        include!("bossa/src/Flash.h");
-        include!("bossa/src/Flasher.h");
-        include!("bossa/src/Info.h");
-        include!("bossa/src/PortFactory.h");
-        include!("bossa/src/Samba.h");
-        include!("bossa/src/SerialPort.h");
+        include!("bossa/src/gui/BossaObserver.h");
+        include!("bossa/src/lib/Device.h");
+        include!("bossa/src/lib/Flash.h");
+        include!("bossa/src/lib/Flasher.h");
+        include!("bossa/src/lib/Info.h");
+        include!("bossa/src/lib/serial/PortFactory.h");
+        include!("bossa/src/lib/Samba.h");
+        include!("bossa/src/lib/serial/SerialPort.h");
 
         /* SerialPort */
         type SerialPort;
@@ -319,4 +319,3 @@ impl lib::FlasherInfoRs {
         }
     }
 }
-
