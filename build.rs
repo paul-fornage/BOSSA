@@ -1,5 +1,33 @@
+use std::env;
+
+enum TargetOs {
+    Windows,
+    Linux,
+    MacOs,
+    Bsd,
+}
+
+impl TargetOs {
+    fn from_cargo() -> Self {
+        let target_os = env::var("CARGO_CFG_TARGET_OS").expect("Cargo must provide the target OS");
+        match target_os.as_str() {
+            "windows" => Self::Windows,
+            "linux" => Self::Linux,
+            "macos" => Self::MacOs,
+            "freebsd" | "openbsd" => Self::Bsd,
+            other => panic!("unsupported BOSSA target OS: {other}"),
+        }
+    }
+}
+
 fn main() {
-    let cpp_files = vec![
+    // Build scripts run on the host, so cfg!(target_os) does not describe the
+    // platform that the C++ library must be compiled for.
+    let target_os = TargetOs::from_cargo();
+    let target_env =
+        env::var("CARGO_CFG_TARGET_ENV").expect("Cargo must provide the target environment");
+
+    let mut cpp_files = vec![
         "src/Applet.cpp",
         "src/BossaObserver.cpp",
         "src/D2xNvmFlash.cpp",
@@ -10,22 +38,12 @@ fn main() {
         "src/Flash.cpp",
         "src/Flasher.cpp",
         "src/Info.cpp",
-        #[cfg(target_os = "linux")]
-        "src/LinuxPortFactory.cpp",
-        #[cfg(target_os = "macos")]
-        "src/OSXPortFactory.cpp",
         "src/PortFactory.cpp",
-        #[cfg(target_family = "unix")]
-        "src/PosixSerialPort.cpp",
         "src/Samba.cpp",
-        #[cfg(target_os = "windows")]
-        "src/WinPortFactory.cpp",
-        #[cfg(target_os = "windows")]
-        "src/WinSerialPort.cpp",
         "src/WordCopyApplet.cpp",
         "src/WordCopyArm.cpp",
     ];
-    let h_files = vec![
+    let mut h_files = vec![
         "src/Applet.h",
         "src/BossaObserver.h",
         "src/D2xNvmFlash.h",
@@ -36,43 +54,47 @@ fn main() {
         "src/Flash.h",
         "src/Flasher.h",
         "src/Info.h",
-        #[cfg(target_os = "linux")]
-        "src/LinuxPortFactory.h",
-        #[cfg(target_os = "macos")]
-        "src/OSXPortFactory.h",
         "src/PortFactory.h",
-        #[cfg(target_family = "unix")]
-        "src/PosixSerialPort.h",
         "src/Samba.h",
         "src/SerialPort.h",
-        #[cfg(target_os = "windows")]
-        "src/WinPortFactory.h",
-        #[cfg(target_os = "windows")]
-        "src/WinSerialPort.h",
         "src/WordCopyApplet.h",
         "src/WordCopyArm.h",
     ];
-    let rs_files = vec!["src/lib.rs"];
 
-    // Setup cxx build
-    //  cpp files to watch + build
-    //  h files to watch
-    //  rs files to watch
-    let mut build = cxx_build::bridges(rs_files.clone());
+    match target_os {
+        TargetOs::Windows => {
+            cpp_files.extend(["src/WinPortFactory.cpp", "src/WinSerialPort.cpp"]);
+            h_files.extend(["src/WinPortFactory.h", "src/WinSerialPort.h"]);
+            println!("cargo:rustc-link-lib=setupapi");
+        }
+        TargetOs::Linux => {
+            cpp_files.extend(["src/LinuxPortFactory.cpp", "src/PosixSerialPort.cpp"]);
+            h_files.extend(["src/LinuxPortFactory.h", "src/PosixSerialPort.h"]);
+        }
+        TargetOs::MacOs => {
+            cpp_files.extend(["src/OSXPortFactory.cpp", "src/PosixSerialPort.cpp"]);
+            h_files.extend(["src/OSXPortFactory.h", "src/PosixSerialPort.h"]);
+        }
+        TargetOs::Bsd => {
+            cpp_files.extend(["src/BSDPortFactory.cpp", "src/PosixSerialPort.cpp"]);
+            h_files.extend(["src/BSDPortFactory.h", "src/PosixSerialPort.h"]);
+        }
+    }
+
+    let mut build = cxx_build::bridge("src/lib.rs");
+    println!("cargo:rerun-if-changed=src/lib.rs");
     for cpp in cpp_files {
         build.file(cpp);
-        println!("cargo:rerun-if-changed={}", cpp);
+        println!("cargo:rerun-if-changed={cpp}");
     }
     for h in h_files {
-        println!("cargo:rerun-if-changed={}", h);
-    }
-    for rs in rs_files {
-        println!("cargo:rerun-if-changed={}", rs);
+        println!("cargo:rerun-if-changed={h}");
     }
 
-    // Extra includes needed for msvc environments
-    #[cfg(target_env = "msvc")]
-    build.include("src/msvc");
+    if target_env == "msvc" {
+        build.include("src/msvc");
+        println!("cargo:rerun-if-changed=src/msvc");
+    }
 
-    build.flag_if_supported("-std=c++14").compile("bossa");
+    build.std("c++14").compile("bossa");
 }
