@@ -3,6 +3,7 @@ use clap::Parser;
 use cxx::{let_cxx_string, CxxString};
 use flexi_logger::Logger;
 use log::{debug, error};
+use std::ffi::c_char;
 use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -320,7 +321,7 @@ pub fn main() -> std::process::ExitCode {
         unsafe {
             flasher
                 .pin_mut()
-                .write(path_buf.as_ptr() as *const i8, args.offset);
+                .write(path_buf.as_ptr().cast::<c_char>(), args.offset);
         }
         println!("\nDone in {:?}", start.elapsed());
     }
@@ -336,7 +337,7 @@ pub fn main() -> std::process::ExitCode {
         let start = Instant::now();
         if !unsafe {
             flasher.pin_mut().verify(
-                path_buf.as_ptr() as *const i8,
+                path_buf.as_ptr().cast::<c_char>(),
                 &mut page_errors,
                 &mut total_errors,
                 args.offset,
@@ -359,7 +360,7 @@ pub fn main() -> std::process::ExitCode {
         unsafe {
             flasher
                 .pin_mut()
-                .read(path_buf.as_ptr() as *const i8, size, args.offset);
+                .read(path_buf.as_ptr().cast::<c_char>(), size, args.offset);
         }
         println!("\nDone in {:?}", start.elapsed());
     }
